@@ -15,6 +15,10 @@ from openai import OpenAI
 import warnings
 warnings.filterwarnings("ignore")
 
+# Configure paths
+TEMP_DIR = os.path.join(os.getcwd(), "temp")
+os.makedirs(TEMP_DIR, exist_ok=True)
+
 
 device="cuda:0"
 # model = whisper.load_model('large-v3', device=device)
@@ -28,7 +32,7 @@ def get_audio_length(file):
 
 def convert_to_ogg(file):
     print("Converting file:", file)
-    output_file = '/home/nci/Data/yt-download/temp/temp.ogg'
+    output_file = os.path.join(TEMP_DIR, 'temp.ogg')
     cmd = f'ffmpeg -y -i "{file}" -vn -map_metadata -1 -ac 1 -c:a libopus -b:a 12k -application voip "{output_file}"'
     
     try:
@@ -69,7 +73,7 @@ def segments_to_srt(segments_df):
         srt_content.append("")  # Empty line between subtitles
     
     # Write to temporary file
-    temp_file = "/home/nci/Data/yt-download/temp/subtitles.srt"
+    temp_file = os.path.join(TEMP_DIR, "subtitles.srt")
     with open(temp_file, 'w', encoding='utf-8') as f:
         f.write('\n'.join(srt_content))
     
@@ -91,7 +95,7 @@ def segments_to_vtt(segments_df):
         vtt_content.append("")  # Empty line between subtitles
     
     # Write to temporary file
-    temp_file = "/home/nci/Data/yt-download/temp/subtitles.vtt"
+    temp_file = os.path.join(TEMP_DIR, "subtitles.vtt")
     with open(temp_file, 'w', encoding='utf-8') as f:
         f.write('\n'.join(vtt_content))
     
@@ -111,7 +115,7 @@ def segments_to_txt(segments_df):
         txt_content.append(f"[{start_time} --> {end_time}] {text}")
     
     # Write to temporary file
-    temp_file = "/home/nci/Data/yt-download/temp/transcript.txt"
+    temp_file = os.path.join(TEMP_DIR, "transcript.txt")
     with open(temp_file, 'w', encoding='utf-8') as f:
         f.write('\n'.join(txt_content))
     
@@ -127,7 +131,7 @@ def transcribe(audio):
         return "Audio file is too long. Please upload a file that is less than 90 minutes long.", pd.DataFrame(), None, None, None, None
     else:
         convert_to_ogg(audio)
-        fp_m = "/home/nci/Data/yt-download/temp/temp.ogg"
+        fp_m = os.path.join(TEMP_DIR, "temp.ogg")
         options = dict(language="english", beam_size=5, best_of=5)
         transcribe_options = dict(task="transcribe", **options)
         result = model.transcribe(fp_m, **transcribe_options)
